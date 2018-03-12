@@ -1,0 +1,57 @@
+{
+  "env": {
+    "browser": false,
+    "node": true,
+    "es6": true
+  },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 8,
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true,
+      "templateStrings": true,
+      "superInFunctions": false,
+      "classes": true,
+      "modules": true
+    },
+    "sourceType": "module"
+  },
+  "plugins": [
+    "babel"
+  ],
+  "rules": {
+    "global-require": "off",
+    "array-callback-return": "off",
+    "no-console": "off",
+    "import/no-extraneous-dependencies": 0,
+    "prefer-const": ["error", {
+      "destructuring": "any",
+      "ignoreReadBeforeAssign": false
+    }],
+    "prefer-template": "error",
+    "object-shorthand": ["error", "always"],
+    "arrow-parens": ["error", "always"],
+    "prefer-arrow-callback": "error",
+    "space-in-parens": ["error", "never"],
+    "no-trailing-spaces": "error",
+    "no-multi-spaces": "error",
+    "no-underscore-dangle": [
+      "error", {
+        "allow": [
+          "__PRELOADED_STATE__",
+          "__REDUX_DEVTOOLS_EXTENSION__",
+          "__CONFIG__",
+          "__CORDOVA__"
+        ]
+      }
+    ]
+  },
+  "globals": {
+    "__DEV__": false,
+    "__CONFIG__": false,
+    "__CORDOVA__": false,
+    "__IOS__": false,
+    "__ANDROID__": false,
+    "__REDUX_DEVTOOLS_EXTENSION__": false
+  }
+}
