@@ -1,4 +1,3 @@
-const appRoot = require('app-root-path');
 const gm = require('gm');
 const exiftool = require('node-exiftool');
 const exiftoolBin = require('dist-exiftool');
