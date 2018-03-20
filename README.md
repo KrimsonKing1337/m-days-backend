@@ -19,4 +19,4 @@ Next install node dependencies ``````npm i``````,
 
 make convert ```npm run convert``` 
 
-and start server ```npm run server```.
+and start server ```npm run start```.
