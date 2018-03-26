@@ -1,8 +1,10 @@
+const localVars = require('./getLocalVars')();
 const getRandomImage = require('./getRandomImg');
 //const mail = require('./mail');
 const express = require('express');
 const app = express();
-const port = 8000;
+
+const port = localVars.port || 8080;
 const rateLimit = require('express-request-limit');
 const rateLimitOpts = {
     timeout: 1000 * 5,
@@ -12,28 +14,20 @@ const rateLimitOpts = {
     errMessage: 'Too many requests made to this route'
 };
 
-let localOptions;
-
-try {
-    localOptions = require('./options.local');
-} catch (err) {
-    throw err;
-}
-
-if (!localOptions.buildPath) {
+if (!localVars.buildPath) {
     console.error('buildPath does not specified!');
 
     return false;
 }
 
 
-app.use(express.static(localOptions.buildPath)); //корень веба
+app.use(express.static(localVars.buildPath)); //корень веба
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.get('/bg', /*rateLimit(rateLimitOpts),*/ async (req, res) => {
     const screenWidth = req.query.screenWidth;
-    const randomImage = await getRandomImage(`${localOptions.imgsPath}/${screenWidth}`);
+    const randomImage = await getRandomImage(`${localVars.imgsPath}/${screenWidth}`);
 
     res.send(`${screenWidth}/${randomImage}`);
 });

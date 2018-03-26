@@ -15,7 +15,18 @@ sudo apt-get update
 sudo apt-get install graphicsmagick
 ```
 
-Next install node dependencies ``````npm i``````,
+Create file with local variables 
+(by default ${root}/.local.js)
+and set them.
+
+You need to specify 
+```port```,
+```imgsSrcPath```,
+```imgsPath```,
+```buildPath```
+at least.
+
+Then install node dependencies ```npm i```,
 
 make convert ```npm run convert``` 
 

@@ -1,3 +1,4 @@
+const localVars = require('./getLocalVars')();
 const gm = require('gm');
 const exiftool = require('node-exiftool');
 const exiftoolBin = require('dist-exiftool');
@@ -8,21 +9,13 @@ const Dir = require('./Dir');
 const File = require('./File');
 const randomString = require('./randomString');
 
-let localOptions;
-
-try {
-    localOptions = require('./options.local');
-} catch (err) {
-    throw err;
-}
-
-if (!localOptions.imgsSrcPath) {
+if (!localVars.imgsSrcPath) {
     console.error('imgsSrcPath does not specified!');
 
     return false;
 }
 
-if (!localOptions.imgsPath) {
+if (!localVars.imgsPath) {
     console.error('imgsPath does not specified!');
 
     return false;
@@ -299,8 +292,8 @@ class ConvertImgs {
 }
 
 const convert = new ConvertImgs({
-    imgsSrcPath: localOptions.imgsSrcPath,
-    imgsPath: localOptions.imgsPath
+    imgsSrcPath: localVars.imgsSrcPath,
+    imgsPath: localVars.imgsPath
 });
 
 convert.start();
