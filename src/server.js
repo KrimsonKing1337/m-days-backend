@@ -27,7 +27,7 @@ app.use(express.urlencoded({extended: true}));
 
 app.get('/bg', /*rateLimit(rateLimitOpts),*/ async (req, res) => {
     const screenWidth = req.query.screenWidth;
-    const randomImage = await getRandomImage(`${localVars.buildPath}/img_bg/${screenWidth}`);
+    const randomImage = await getRandomImage(`${localVars.imgsRandomPath}/${screenWidth}`);
 
     res.send(`${screenWidth}/${randomImage}`);
 });

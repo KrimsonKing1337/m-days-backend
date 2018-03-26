@@ -23,6 +23,7 @@ You need to specify
 ```port```,
 ```imgsSrcPath```,
 ```imgsPath```,
+```imgsRandomPath```,
 ```buildPath```
 at least.
 
