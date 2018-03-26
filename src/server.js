@@ -21,13 +21,13 @@ if (!localVars.buildPath) {
 }
 
 
-app.use(express.static(localVars.buildPath)); //корень веба
+app.use(express.static(localVars.buildPath)); //web root
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.get('/bg', /*rateLimit(rateLimitOpts),*/ async (req, res) => {
     const screenWidth = req.query.screenWidth;
-    const randomImage = await getRandomImage(`${localVars.imgsPath}/${screenWidth}`);
+    const randomImage = await getRandomImage(`${localVars.buildPath}/img_bg/${screenWidth}`);
 
     res.send(`${screenWidth}/${randomImage}`);
 });
