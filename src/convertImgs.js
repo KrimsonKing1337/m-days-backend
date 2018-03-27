@@ -1,4 +1,4 @@
-const localVars = require('./getGlobals')();
+const GLOBALS = require('./getGlobals')();
 const gm = require('gm');
 const exiftool = require('node-exiftool');
 const exiftoolBin = require('dist-exiftool');
@@ -10,13 +10,13 @@ const File = require('./File');
 const randomString = require('./randomString');
 const getMaxWidth = require('./getMaxWidth');
 
-if (!localVars.imgsSrcPath) {
+if (!GLOBALS.imgsSrcPath) {
     console.error('imgsSrcPath does not specified!');
 
     return false;
 }
 
-if (!localVars.imgsPath) {
+if (!GLOBALS.imgsPath) {
     console.error('imgsPath does not specified!');
 
     return false;
@@ -278,8 +278,8 @@ class ConvertImgs {
 }
 
 const convert = new ConvertImgs({
-    imgsSrcPath: localVars.imgsSrcPath,
-    imgsPath: localVars.imgsPath
+    imgsSrcPath: GLOBALS.imgsSrcPath,
+    imgsPath: GLOBALS.imgsPath
 });
 
 convert.start();
