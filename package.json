@@ -24,6 +24,7 @@
     "app-root-path": "^2.0.1",
     "async": "^2.6.0",
     "babel-eslint": "^8.2.2",
+    "compression": "^1.7.2",
     "cross-env": "^5.1.1",
     "dist-exiftool": "^10.53.0",
     "eslint": "^4.8.0",

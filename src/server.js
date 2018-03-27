@@ -3,6 +3,7 @@ const getRandomImage = require('./getRandomImg');
 //const mail = require('./mail');
 const express = require('express');
 const app = express();
+const compression = require('compression');
 
 const port = GLOBALS.port || 8080;
 const rateLimit = require('express-request-limit');
@@ -20,7 +21,11 @@ if (!GLOBALS.buildPath) {
     return false;
 }
 
+function shouldCompress(req, res) {
+    return true;
+}
 
+app.use(compression({filter : shouldCompress}));
 app.use(express.static(GLOBALS.buildPath)); //web root
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
