@@ -1,4 +1,4 @@
-const localVars = require('./getLocalVars')();
+const localVars = require('./getGlobals')();
 const gm = require('gm');
 const exiftool = require('node-exiftool');
 const exiftoolBin = require('dist-exiftool');

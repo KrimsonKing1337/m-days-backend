@@ -15,8 +15,8 @@ sudo apt-get update
 sudo apt-get install graphicsmagick
 ```
 
-Create file with local variables 
-(by default ${root}/.local.js)
+Create file with global variables 
+(by default ${root}/.globals.js)
 and set them.
 
 You need to specify 

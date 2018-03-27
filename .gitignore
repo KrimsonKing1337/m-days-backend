@@ -8,4 +8,5 @@ node_modules/
 build/
 stats.json
 *.local.*
+.globals.js
 *.env
