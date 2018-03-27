@@ -1,6 +1,5 @@
 const localVars = require('./getLocalVars')();
 const getRandomImage = require('./getRandomImg');
-const getMaxWidth = require('./getMaxWidth');
 //const mail = require('./mail');
 const express = require('express');
 const app = express();
@@ -27,7 +26,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.get('/bg', /*rateLimit(rateLimitOpts),*/ async (req, res) => {
-    const screenWidth = getMaxWidth(req.query.screenWidth);
+    const screenWidth = req.query.screenWidth;
     const randomImage = await getRandomImage(`${localVars.imgsRandomPath}/${screenWidth}`);
 
     res.send(`${screenWidth}/${randomImage}`);
