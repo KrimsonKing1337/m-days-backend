@@ -1,4 +1,4 @@
-const GLOBALS = require('./getGlobals')();
+const GLOBALS = require('dot-globals')();
 const getRandomImage = require('./getRandomImg');
 //const mail = require('./mail');
 const express = require('express');

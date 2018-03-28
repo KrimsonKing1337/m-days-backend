@@ -1,4 +1,4 @@
-const GLOBALS = require('./getGlobals')();
+const GLOBALS = require('dot-globals')();
 const gm = require('gm');
 const exiftool = require('node-exiftool');
 const exiftoolBin = require('dist-exiftool');
