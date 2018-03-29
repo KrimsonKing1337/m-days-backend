@@ -4,6 +4,7 @@ const getRandomImage = require('./getRandomImg');
 const express = require('express');
 const app = express();
 const compression = require('compression');
+const helmet = require('helmet');
 
 const port = GLOBALS.port || 8080;
 const rateLimit = require('express-request-limit');
@@ -26,6 +27,9 @@ function shouldCompress(req, res) {
 }
 
 app.use(compression({filter : shouldCompress}));
+app.use(helmet());
+app.use(helmet.hidePoweredBy());
+app.disable('x-powered-by');
 app.use(express.static(GLOBALS.buildPath)); //web root
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
