@@ -42,7 +42,7 @@ app.get('/bg', /*rateLimit(rateLimitOpts),*/ async (req, res) => {
 });
 
 app.use((req, res) => {
-    res.status(404).redirect('/');
+    res.status(404).redirect(`/?route=${req.url.slice(1)}`);
 });
 
 /*app.post('/mail', async (req, res) => {
