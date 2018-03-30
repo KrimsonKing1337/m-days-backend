@@ -31,4 +31,4 @@ Then install node dependencies ```npm i```,
 
 make convert ```npm run convert``` 
 
-and start server ```npm run start```.
+and start server ```npm run start```
