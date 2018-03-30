@@ -41,6 +41,10 @@ app.get('/bg', /*rateLimit(rateLimitOpts),*/ async (req, res) => {
     res.send(`${screenWidth}/${randomImage}`);
 });
 
+app.use((req, res) => {
+    res.status(404).redirect('/');
+});
+
 /*app.post('/mail', async (req, res) => {
     if (req.body.text) {
         res.status(200).send('ok');
