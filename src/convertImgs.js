@@ -184,6 +184,9 @@ class ConvertImgs {
      * @param sizes[] {string}
      */
     convertTargetEachSize ({img, sizes} = {}) {
+        if (!img) return Promise.resolve();
+        //todo: too small images break the system (as example: Слава Скорокин -> DLoD_Bdzkuc.jpg)
+
         return new Promise((resolve, reject) => {
             /**
              * sizes = collection to iterate over,
