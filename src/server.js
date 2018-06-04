@@ -1,9 +1,10 @@
-const GLOBALS = require('./getGlobals')();
+const GLOBALS = require('dot-globals')();
 const getRandomImage = require('./getRandomImg');
 //const mail = require('./mail');
 const express = require('express');
 const app = express();
 const compression = require('compression');
+const helmet = require('helmet');
 
 const port = GLOBALS.port || 8080;
 const rateLimit = require('express-request-limit');
@@ -26,6 +27,9 @@ function shouldCompress(req, res) {
 }
 
 app.use(compression({filter : shouldCompress}));
+app.use(helmet());
+app.use(helmet.hidePoweredBy());
+app.disable('x-powered-by');
 app.use(express.static(GLOBALS.buildPath)); //web root
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -35,6 +39,10 @@ app.get('/bg', /*rateLimit(rateLimitOpts),*/ async (req, res) => {
     const randomImage = await getRandomImage(`${GLOBALS.imgsRandomPath}/${screenWidth}`);
 
     res.send(`${screenWidth}/${randomImage}`);
+});
+
+app.use((req, res) => {
+    res.status(404).redirect(`/?route=${req.url.slice(1)}`);
 });
 
 /*app.post('/mail', async (req, res) => {
