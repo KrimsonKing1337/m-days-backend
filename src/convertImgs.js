@@ -76,7 +76,8 @@ class ConvertImgs {
 
         if (width < 640) {
             console.log(`${img.fullPath} is too small, skipped;`);
-            return;
+
+            return Promise.resolve('tooSmall');
         }
 
         if (delta < 1 || delta > 2) {
@@ -120,7 +121,7 @@ class ConvertImgs {
             targetsPromisesArr.push(this.formatTarget(imgCur));
         });
 
-        return Promise.all(targetsPromisesArr);
+        return Promise.all(targetsPromisesArr.filter((targetCur) => targetCur !== 'tooSmall'));
     }
 
     /**
@@ -137,6 +138,7 @@ class ConvertImgs {
              */
             eachSeries(targets, (targetCur, next) => {
                 const promise = this.convertTargetEachSize(targetCur);
+
                 promise.then(() => {
                     next();
                 });
@@ -184,7 +186,7 @@ class ConvertImgs {
      * @param sizes[] {string}
      */
     convertTargetEachSize ({img, sizes} = {}) {
-        if (!img) return Promise.resolve();
+        //if (!img) return Promise.resolve();
         //todo: too small images break the system (as example: Слава Скорокин -> DLoD_Bdzkuc.jpg)
 
         return new Promise((resolve, reject) => {
@@ -197,6 +199,7 @@ class ConvertImgs {
                 const newName = randomString();
                 const imgCurDoneDir = `${this.imgsPath}/${sizeCur}`;
                 const newFullName = `${imgCurDoneDir}/${newName}.jpg`;
+
                 Dir.checkExist(imgCurDoneDir);
 
                 this.convert({
