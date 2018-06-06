@@ -28,7 +28,7 @@ class ConvertImgs {
      * @param imgsSrcPath {string}
      * @param imgsPath {string}
      */
-    constructor ({imgsSrcPath, imgsPath} = {}) {
+    constructor({imgsSrcPath, imgsPath} = {}) {
         this.imgsSrcPath = imgsSrcPath;
         this.imgsPath = imgsPath;
         this.allowSizes = [640, 1280, 1600, 1920, 2560, 3840, 5210, 7680];
@@ -39,7 +39,7 @@ class ConvertImgs {
      * @private
      * @returns {Array}
      */
-    getImages () {
+    getImages() {
         return Dir.readDir({
             path: this.imgsSrcPath,
             formats: this.allowFormats
@@ -53,7 +53,7 @@ class ConvertImgs {
      * each new converted image.
      * so if not empty there will be many duplicate
      */
-    emptyImgsDoneDir () {
+    emptyImgsDoneDir() {
         return Dir.empty(this.imgsPath);
     }
 
@@ -63,7 +63,7 @@ class ConvertImgs {
      * @param img.fullPath {string}
      * @returns {Promise}
      */
-    async formatTarget (img) {
+    async formatTarget(img) {
         const info = {};
         const sizes = [];
 
@@ -114,7 +114,7 @@ class ConvertImgs {
      * @param images[] {object}; collection of images
      * @returns {Promise}
      */
-    formatEachTarget (images) {
+    formatEachTarget(images) {
         const targetsPromisesArr = [];
 
         images.forEach((imgCur) => {
@@ -129,7 +129,7 @@ class ConvertImgs {
      * @param targets[] {object}; collection of targets
      * @returns {Promise}
      */
-    convertEachTarget (targets) {
+    convertEachTarget(targets) {
         return new Promise((resolve, reject) => {
             /**
              * targets = collection to iterate over,
@@ -158,7 +158,7 @@ class ConvertImgs {
      * @param size {object}
      * @returns {Promise}
      */
-    static tryToSquare ({img, size} = {}) {
+    static tryToSquare({img, size} = {}) {
         const cropVal = size.height < size.width ? size.height : size.width;
 
         return new Promise(((resolve, reject) => {
@@ -185,7 +185,7 @@ class ConvertImgs {
      * @param img.ext {string}
      * @param sizes[] {string}
      */
-    convertTargetEachSize ({img, sizes} = {}) {
+    convertTargetEachSize({img, sizes} = {}) {
         //if (!img) return Promise.resolve();
         //todo: too small images break the system (as example: Слава Скорокин -> DLoD_Bdzkuc.jpg)
 
@@ -231,7 +231,7 @@ class ConvertImgs {
      * @param newFullName {string}
      * @returns {Promise<[any]>}
      */
-    convert ({img, size, newName, newFullName} = {}) {
+    convert({img, size, newName, newFullName} = {}) {
         return new Promise(((resolve, reject) => {
             gm(img.fullPath).channel('gray').resize(size).quality(75)
                 .write(`${newFullName}`, async (err) => {
@@ -256,7 +256,7 @@ class ConvertImgs {
      *
      * @param img {string}; full path
      */
-    static removeMetaData (img) {
+    static removeMetaData(img) {
         return new Promise(((resolve, reject) => {
             ep
                 .open()
@@ -271,7 +271,7 @@ class ConvertImgs {
         }));
     }
 
-    async start () {
+    async start() {
         await this.emptyImgsDoneDir();
 
         const images = this.getImages();
