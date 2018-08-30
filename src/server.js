@@ -22,6 +22,8 @@ if (!GLOBALS.buildPath) {
     return false;
 }
 
+console.log(GLOBALS.buildPath);
+
 function shouldCompress(req, res) {
     return true;
 }
@@ -42,7 +44,8 @@ app.get('/bg', /*rateLimit(rateLimitOpts),*/ async (req, res) => {
 });
 
 app.use((req, res) => {
-    res.status(404).redirect(`/?route=${req.url.slice(1)}`);
+    //res.status(404).redirect(`/?route=${req.url.slice(1)}`); // uncomment for angular frontend
+    res.sendFile(`${GLOBALS.buildPath}/index.html`);
 });
 
 /*app.post('/mail', async (req, res) => {
