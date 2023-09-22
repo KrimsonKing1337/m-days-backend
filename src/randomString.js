@@ -1,9 +1,9 @@
 /**
  *
- * @param [count] {string}
+ * @param count {number}
  * @returns {string}
  */
-function randomString (count = 10) {
+function randomString(count = 10) {
     let randomString = '';
     const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 

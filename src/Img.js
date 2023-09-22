@@ -1,25 +1,29 @@
 const gm = require('gm');
 
 class Img {
-    constructor() {
+  constructor() {
 
-    }
+  }
 
-    /**
-     *
-     * @param path {string}
-     * @param param {string}
-     * @returns {Promise<any>}
-     */
-    static getInfo (path, param) {
-        return new Promise((resolve, reject) => {
-            gm(path)[param]((err, val) => {
-                if (err) reject(err);
+  /**
+   *
+   * @param path {string}
+   * @param param {string}
+   * @returns {object}
+   */
+  static getInfo(path, param) {
+    let value;
 
-                resolve(val);
-            });
-        });
-    }
+    gm(path)[param]((err, val) => {
+      if (err) {
+        throw err;
+      }
+
+      value = val;
+    });
+
+    return value;
+  }
 }
 
 module.exports = Img;

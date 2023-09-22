@@ -1,27 +1,25 @@
-const random = require('./randomInteger');
-const Dir = require('./Dir');
+const fs = require('fs-extra');
 
-let oldFile;
+const random = require('./randomInteger');
 
 /**
  *
  * @param path
- * @returns {Promise<any>}
+ * @returns {string}
  */
-module.exports = function (path) {
-    return new Promise((resolve, reject) => {
-        async function randomFile () {
-            const files = await Dir.ls(path);
-            const file = files[random(0, files.length - 1)];
+module.exports = function(path) {
+    let oldFile;
 
-            if (file === oldFile) {
-                randomFile();
-            } else {
-                oldFile = file;
-                resolve(file);
-            }
+    function randomFile() {
+        const files = fs.readdirSync(path);
+        const file = files[random(0, files.length - 1)];
+
+        if (file === oldFile) {
+            randomFile();
+        } else {
+           return file;
         }
+    }
 
-        randomFile();
-    });
+    return randomFile();
 };
