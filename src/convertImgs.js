@@ -1,37 +1,43 @@
-const fs = require('fs');
-
 const GLOBALS = require('dot-globals')();
 const sharp = require('sharp');
 
-const Dir = require('./Dir');
-
 const randomString = require('./randomString');
 const getMaxWidth = require('./getMaxWidth');
+const readDir = require('./readDirSync.js');
+const createDirIfNotExist = require('./createDirIfNotExist.js');
+const removeDir = require('./removeDir.js');
 
-if (!GLOBALS.imgsSrcPath) {
-  console.error('imgsSrcPath does not specified!');
+if (!GLOBALS.imagesSourcesPath) {
+  console.error('imagesSourcesPath does not specified!');
 
-  return false;
+  process.exit(-1);
 }
 
-if (!GLOBALS.imgsPath) {
-  console.error('imgsPath does not specified!');
+if (!GLOBALS.imagesTargetPath) {
+  console.error('imagesTargetPath does not specified!');
 
-  return false;
+  process.exit(-1);
+}
+
+if (!GLOBALS.imagesTempPath) {
+  console.error('imagesTempPath does not specified!');
+
+  process.exit(-1);
 }
 
 // todo: исключить аватары фотографов
 
-class ConvertImgs {
+class ConvertImages {
   /**
    *
-   * @param imgsSrcPath {string}
-   * @param imgsPath {string}
+   * @param imagesSourcesPath {string}
+   * @param imagesTargetPath {string}
+   * @param imagesTempPath {string}
    */
-  constructor({ imgsSrcPath, imgsPath } = {}) {
-    this.imgsSrcPath = imgsSrcPath;
-    this.imgsPath = imgsPath;
-    this.tempPath = `${imgsPath}/_temp`;
+  constructor({ imagesSourcesPath, imagesTargetPath, imagesTempPath } = {}) {
+    this.imagesSourcesPath = imagesSourcesPath;
+    this.imagesTargetPath = imagesTargetPath;
+    this.tempPath = imagesTempPath;
 
     this.allowSizes = [640, 1280, 1600, 1920, 2560, 3840, 5210, 7680];
     this.allowFormats = ['bmp', 'gif', 'jng', 'jp2', 'jpc', 'jpeg', 'jpg', 'png', 'ptif', 'tiff'];
@@ -42,14 +48,10 @@ class ConvertImgs {
    * @returns {Array}
    */
   getImages() {
-    return Dir.readDir({
-      path: this.imgsSrcPath,
+    return readDir({
+      path: this.imagesSourcesPath,
       formats: this.allowFormats
     });
-  }
-
-  static removeDir(dirPath) {
-    fs.rmSync(dirPath, { recursive: true, force: true });
   }
 
   /**
@@ -125,7 +127,6 @@ class ConvertImgs {
   /**
    * @private
    * @param targets[] {object}; collection of targets
-   * @returns {void}
    */
   async convertEachTarget(targets) {
     for (const targetCur of targets) {
@@ -153,7 +154,7 @@ class ConvertImgs {
     const imgCurTargetDir = this.tempPath;
     const newFullName = `${imgCurTargetDir}/${newName}.jpg`;
 
-    Dir.checkExist(imgCurTargetDir);
+    createDirIfNotExist(imgCurTargetDir);
 
     await sharp(img.fullPath)
       .resize({ width: cropVal, height: cropVal, fit: 'cover' })
@@ -174,14 +175,12 @@ class ConvertImgs {
    * @property target.sizes {string[]}
    */
   async convertTargetEachSize({ img, sizes } = {}) {
-    // todo: too small images break the system (as example: Слава Скорокин -> DLoD_Bdzkuc.jpg)
-
     for (const sizeCur of sizes) {
       const newName = randomString();
-      const imgCurTargetDir = `${this.imgsPath}/${sizeCur}`;
+      const imgCurTargetDir = `${this.imagesTargetPath}/${sizeCur}`;
       const newFullName = `${imgCurTargetDir}/${newName}.jpg`;
 
-      Dir.checkExist(imgCurTargetDir);
+      createDirIfNotExist(imgCurTargetDir);
 
       await this.convert({
         img,
@@ -193,7 +192,6 @@ class ConvertImgs {
   }
 
   /**
-   * @private
    * @param img {object}
    * @property img.fullPath {string}
    * @property img.name {string}
@@ -201,7 +199,6 @@ class ConvertImgs {
    * @param size {string}
    * @param newName {string}
    * @param newFullName {string}
-   * @returns {void}
    */
   async convert({ img, size, newName, newFullName } = {}) {
     const width = Number(size);
@@ -215,23 +212,32 @@ class ConvertImgs {
   }
 
   async start() {
-    ConvertImgs.removeDir(this.imgsPath);
-    Dir.checkExist(this.imgsPath);
+    removeDir(this.imagesTargetPath);
+    createDirIfNotExist(this.imagesTargetPath);
 
     const images = this.getImages();
-    const targets = await this.formatEachTarget(images);
+
+    // убираю аватарки фотографов
+    const imagesWithoutAvatars = images.filter((imgCur) => {
+      const { name } = imgCur;
+
+      return !name.includes('avatar');
+    });
+
+    const targets = await this.formatEachTarget(imagesWithoutAvatars);
 
     await this.convertEachTarget(targets);
 
-    ConvertImgs.removeDir(this.tempPath);
+    removeDir(this.tempPath);
 
     console.log('done');
   }
 }
 
-const convert = new ConvertImgs({
-  imgsSrcPath: GLOBALS.imgsSrcPath,
-  imgsPath: GLOBALS.imgsPath
+const convert = new ConvertImages({
+  imagesSourcesPath: GLOBALS.imagesSourcesPath,
+  imagesTargetPath: GLOBALS.imagesTargetPath,
+  imagesTempPath: GLOBALS.imagesTempPath,
 });
 
 convert.start();
