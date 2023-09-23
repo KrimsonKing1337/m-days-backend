@@ -37,6 +37,7 @@ class Dir {
 
           if (formats.length === 0) {
             allFiles.push(fileInfo);
+
             return;
           }
 

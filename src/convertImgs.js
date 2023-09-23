@@ -1,16 +1,12 @@
-const GLOBALS = require('dot-globals')();
-const gm = require('gm');
-const exiftool = require('node-exiftool');
-const exiftoolBin = require('dist-exiftool');
+const fs = require('fs');
 
-const Img = require('./Img');
+const GLOBALS = require('dot-globals')();
+const sharp = require('sharp');
+
 const Dir = require('./Dir');
-const File = require('./File');
 
 const randomString = require('./randomString');
 const getMaxWidth = require('./getMaxWidth');
-
-const ep = new exiftool.ExiftoolProcess(exiftoolBin);
 
 if (!GLOBALS.imgsSrcPath) {
   console.error('imgsSrcPath does not specified!');
@@ -24,6 +20,8 @@ if (!GLOBALS.imgsPath) {
   return false;
 }
 
+// todo: исключить аватары фотографов
+
 class ConvertImgs {
   /**
    *
@@ -33,6 +31,8 @@ class ConvertImgs {
   constructor({ imgsSrcPath, imgsPath } = {}) {
     this.imgsSrcPath = imgsSrcPath;
     this.imgsPath = imgsPath;
+    this.tempPath = `${imgsPath}/_temp`;
+
     this.allowSizes = [640, 1280, 1600, 1920, 2560, 3840, 5210, 7680];
     this.allowFormats = ['bmp', 'gif', 'jng', 'jp2', 'jpc', 'jpeg', 'jpg', 'png', 'ptif', 'tiff'];
   }
@@ -48,48 +48,42 @@ class ConvertImgs {
     });
   }
 
-  /**
-   * @private
-   * empty folder before convert.
-   * it's need because of random name for
-   * each new converted image.
-   * so if not empty there will be many duplicate
-   */
-  makeEmptyTargetDir() {
-    Dir.makeEmpty(this.imgsPath);
+  static removeDir(dirPath) {
+    fs.rmSync(dirPath, { recursive: true, force: true });
   }
 
   /**
    * @private
    * @param img {object}
    * @property img.fullPath {string}
-   * @returns {object}
+   * @returns {object || null}
    */
   async formatTarget(img) {
-    const info = {};
+    let formattedImg = img;
     const sizes = [];
 
-    info.size = Img.getInfo(img.fullPath, 'size');
-    info.format = Img.getInfo(img.fullPath, 'format');
+    const meta = await sharp(img.fullPath).metadata();
 
-    const width = info.size.width;
-    const height = info.size.height;
+    const { width, height } = meta;
+
+    formattedImg.size = {
+      width,
+      height,
+    };
+
     const delta = (width / height);
 
     if (width < 640) {
       console.log(`${img.fullPath} is too small, skipped;`);
 
-      return 'tooSmall';
+      return null;
     }
 
     if (delta < 1 || delta > 2) {
-      const squareImg = ConvertImgs.makeItSquare({
-        img,
-        size: info.size
-      });
+      const squareImg = await this.makeItSquare(formattedImg);
 
       if (squareImg !== false) {
-        img = squareImg;
+        formattedImg = squareImg;
 
         console.log(`${img.fullPath} was cropped to square;`);
       } else {
@@ -106,26 +100,26 @@ class ConvertImgs {
     });
 
     return {
-      img,
-      sizes
+      img: formattedImg,
+      sizes,
     };
   }
 
   /**
    * @private
    * @param images[] {object}; collection of images
-   * @returns {object[]};
+   * @returns {Promise<object[]>};
    */
-  formatEachTarget(images) {
+  async formatEachTarget(images) {
     const targets = [];
 
-    images.forEach((imgCur) => {
-      const formattedTarget = this.formatTarget(imgCur);
+    for (const imgCur of images) {
+      const formattedTarget = await this.formatTarget(imgCur);
 
       targets.push(formattedTarget);
-    });
+    }
 
-    return targets.filter((targetCur) => targetCur !== 'tooSmall');
+    return targets.filter((targetCur) => targetCur !== null);
   }
 
   /**
@@ -133,39 +127,45 @@ class ConvertImgs {
    * @param targets[] {object}; collection of targets
    * @returns {void}
    */
-  convertEachTarget(targets) {
-    targets.forEach((targetCur) => {
-      this.convertTargetEachSize(targetCur);
-    });
+  async convertEachTarget(targets) {
+    for (const targetCur of targets) {
+      await this.convertTargetEachSize(targetCur);
+    }
   }
 
   /**
-   * @property target {object}
-   * @property target.img {object}
-   * @property target.img.fullPath {string}
-   * @property target.img.nameWithoutExt {string}
-   * @property target.size {object}
+   * @property img {object}
+   * @property img.fullPath {string}
+   * @property img.nameWithoutExt {string}
+   * @property img.size {object}
    * @returns {string || false}
    */
-  static makeItSquare({ img, size } = {}) {
+  async makeItSquare(img) {
+    const { size } = img;
+
     const cropVal = size.height < size.width ? size.height : size.width;
 
-    gm(img.fullPath)
-      .gravity('Center')
-      .crop(cropVal, cropVal)
-      .write(img.fullPath, (err) => {
-        if (err) {
-          throw err;
-        }
+    if (cropVal < 640) {
+      return false;
+    }
 
-        const size = Img.getInfo(img.fullPath, 'size');
+    const newName = randomString();
+    const imgCurTargetDir = this.tempPath;
+    const newFullName = `${imgCurTargetDir}/${newName}.jpg`;
 
-        if (size.width < 640) {
-          return false;
-        } else {
-          return File.getInfo(img.fullPath);
-        }
-      });
+    Dir.checkExist(imgCurTargetDir);
+
+    await sharp(img.fullPath)
+      .resize({ width: cropVal, height: cropVal, fit: 'cover' })
+      .toFile(newFullName);
+
+    const newSize = { width: cropVal, height: cropVal };
+
+    return {
+      ...img,
+      size: newSize,
+      fullPath: newFullName,
+    };
   }
 
   /**
@@ -173,23 +173,23 @@ class ConvertImgs {
    * @property target.img {object}
    * @property target.sizes {string[]}
    */
-  convertTargetEachSize({ img, sizes } = {}) {
+  async convertTargetEachSize({ img, sizes } = {}) {
     // todo: too small images break the system (as example: Слава Скорокин -> DLoD_Bdzkuc.jpg)
 
-    sizes.forEach((sizeCur) => {
+    for (const sizeCur of sizes) {
       const newName = randomString();
       const imgCurTargetDir = `${this.imgsPath}/${sizeCur}`;
       const newFullName = `${imgCurTargetDir}/${newName}.jpg`;
 
       Dir.checkExist(imgCurTargetDir);
 
-      this.convert({
+      await this.convert({
         img,
         size: sizeCur,
         newName,
         newFullName,
       });
-    });
+    }
   }
 
   /**
@@ -203,59 +203,27 @@ class ConvertImgs {
    * @param newFullName {string}
    * @returns {void}
    */
-  convert({ img, size, newName, newFullName } = {}) {
-    gm(img.fullPath)
-      .channel('gray')
-      .resize(size)
-      .quality(75)
-      .write(newFullName, async (err) => {
-        if (err) {
-          throw err;
-        }
+  async convert({ img, size, newName, newFullName } = {}) {
+    const width = Number(size);
 
-        try {
-          await ConvertImgs.removeMetaData(newFullName);
-
-          console.log(`meta was removed from ${size}/${newName}.jpg;`);
-        } catch (err) {
-          console.error(err);
-        }
-      });
+    await sharp(img.fullPath)
+      .grayscale()
+      .resize({ width })
+      .toFile(newFullName);
 
     console.log(`${img.name} converted to ${size}/${newName}.jpg;`);
   }
 
-  /**
-   *
-   * @param img {string}; full path
-   */
-  static removeMetaData(img) {
-    return new Promise(((resolve, reject) => {
-      ep
-        .open()
-        .then(() => ep.writeMetadata(
-          img,
-          { all: '' },
-          ['overwrite_original'],
-          false)
-        )
-        .then(() => ep.close())
-        .then(() => {
-          resolve();
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    }));
-  }
-
-  start() {
-    this.makeEmptyTargetDir();
+  async start() {
+    ConvertImgs.removeDir(this.imgsPath);
+    Dir.checkExist(this.imgsPath);
 
     const images = this.getImages();
-    const targets = this.formatEachTarget(images);
+    const targets = await this.formatEachTarget(images);
 
-    this.convertEachTarget(targets);
+    await this.convertEachTarget(targets);
+
+    ConvertImgs.removeDir(this.tempPath);
 
     console.log('done');
   }
